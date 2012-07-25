@@ -1,0 +1,10 @@
+body { 
+  background: #111;
+  text-align: center;
+  }
+
+#game {
+  position: relative;
+  top: 50%;
+  margin-top: -225px;
+  }
