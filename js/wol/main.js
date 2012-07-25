@@ -34,13 +34,14 @@
     function Particle(image) {
       this.index = null;
       this.texture = new Bitmap(image);
+      this.texture.compositeOperation = 'lighter';
       this.texture.regX = image.naturalWidth * 0.5;
       this.texture.regY = image.naturalHeight * 0.5;
-      this.texture.scaleX = this.texture.scaleY = Math.random();
       this.setOrigin(0, 0);
       this.speed = 10 * Math.PI / 180;
       this.time = new Date().getTime() * Math.random();
-      this.randomTime = this.time;
+      this.timeX = new Date().getTime() * Math.random();
+      this.texture.scaleX = this.texture.scaleY = 0.25 * Math.random();
     }
 
     Particle.prototype.die = function() {
@@ -60,9 +61,11 @@
       if (this.entity != null) {
         this.setOrigin(this.entity.sprite.x, this.entity.sprite.y + 40);
       }
-      this.texture.x = this.originX + Math.sin(this.randomTime) * 40;
-      this.texture.y = this.originY + Math.cos(this.time) * 20;
-      return this.time += this.speed;
+      this.texture.x = this.originX + Math.sin(this.timeX) * 40;
+      this.texture.y = this.originY + Math.cos(this.time * 0.25) * 20;
+      this.texture.alpha = Math.abs(Math.cos(this.time));
+      this.time += this.speed;
+      return this.timeX += this.speed * 0.5;
     };
 
     Particle.prototype.x = function(x) {
@@ -105,10 +108,10 @@
       this.fxLayer = this.scene.getLayer('fx');
       this.fxParticle = new Container;
       this.fade = new Shape;
-      this.fxLayer.addChild(this.fade, this.fxParticle);
       this.fade.graphics.beginFill('rgba(0,0,0,0.1)').drawRect(0, 0, canvas.width, canvas.height);
-      this.fxLayer.addChild(this.fade);
+      this.fxLayer.addChild(this.fade, this.fxParticle);
       this.fxLayer.cache(0, 0, canvas.width, canvas.height);
+      this.fxLayer.compositeOperation = 'lighter';
       this.setTerrainPosition(5, 70);
       this.scene.terrain.x = 0;
       this.classes = new ClassManager;
@@ -148,7 +151,7 @@
         particle.followEntity(unit);
         this.particles.push(particle);
         particles.push(particle);
-        this.fxParticle.addChild(particle.texture);
+        this.fxLayer.addChild(particle.texture);
       }
       return particles;
     };
@@ -237,16 +240,31 @@
     };
 
     WingsOfLemuriaTactics.prototype.testUnit = function() {
-      var column, particles, row, tiles, unit;
+      var column, particles, row, tiles, unit,
+        _this = this;
       column = 0;
       row = 1;
       unit = this.addUnit('marine');
+      unit.walk(4, 4);
+      unit.face('left');
+      particles = this.addParticle(unit, 'shield');
+      unit = this.addUnit('vanguard');
+      unit.walk(4, 5);
+      unit.face('left');
+      particles = this.addParticle(unit, 'shield');
+      unit = this.addUnit('vanguard');
+      particles = this.addParticle(unit, 'shield');
       tiles = [[1, 1], [2, 1], [3, 1], [4, 1]];
+      tiles = [[1, 1], [1, 2], [1, 3], [1, 4], [1, 5]];
       unit.walk(column, row);
       this.moveUnit(unit, tiles);
-      particles = this.addParticle(unit, 'shield');
       return unit.on('walkEnd', function() {
         var particle, _i, _len, _results;
+        after(5000, function() {
+          tiles.reverse();
+          unit.walk(tiles[0][0], tiles[0][1]);
+          return _this.moveUnit(unit, tiles);
+        });
         return;
         _results = [];
         for (_i = 0, _len = particles.length; _i < _len; _i++) {
@@ -297,7 +315,7 @@
         i++;
       }
       this.fade.visible = !(this.fxParticle.visible = false);
-      this.fxLayer.updateCache('source-over');
+      this.fxLayer.updateCache('destination-out');
       this.fade.visible = !(this.fxParticle.visible = true);
       return this.fxLayer.updateCache('lighter');
     };

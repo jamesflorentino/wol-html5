@@ -24,13 +24,14 @@ class Particle
   constructor: (image) ->
     @index = null
     @texture = new Bitmap image
+    @texture.compositeOperation = 'lighter'
     @texture.regX = image.naturalWidth * 0.5
     @texture.regY = image.naturalHeight * 0.5
-    @texture.scaleX = @texture.scaleY = Math.random()
     @setOrigin 0, 0
     @speed = 10 * Math.PI / 180
     @time = new Date().getTime()  * Math.random()
-    @randomTime = @time
+    @timeX = new Date().getTime() * Math.random()
+    @texture.scaleX = @texture.scaleY = 0.25 * Math.random()
 
   die: ->
     @complete = true
@@ -44,10 +45,11 @@ class Particle
   update: ->
     if @entity?
       @setOrigin @entity.sprite.x, @entity.sprite.y + 40
-    @texture.x = @originX + Math.sin(@randomTime) * 40
-    @texture.y = @originY + Math.cos(@time) * 20
+    @texture.x = @originX + Math.sin(@timeX) * 40
+    @texture.y = @originY + Math.cos(@time * 0.25) * 20
+    @texture.alpha = Math.abs Math.cos(@time)
     @time += @speed
-
+    @timeX += @speed * 0.5
 
   x: (x) ->
     @texture.x = x if x?
@@ -74,10 +76,10 @@ class WingsOfLemuriaTactics
     @fxLayer = @scene.getLayer 'fx'
     @fxParticle = new Container
     @fade = new Shape
+    @fade.graphics.beginFill('rgba(0,0,0,0.1)').drawRect(0, 0, canvas.width, canvas.height)
     @fxLayer.addChild @fade, @fxParticle
-    @fade.graphics.beginFill('rgba(0,0,0,0.1)').drawRect 0, 0, canvas.width, canvas.height
-    @fxLayer.addChild @fade
     @fxLayer.cache 0, 0, canvas.width, canvas.height
+    @fxLayer.compositeOperation = 'lighter'
 
     # set coordinates
     @setTerrainPosition 5, 70
@@ -123,7 +125,7 @@ class WingsOfLemuriaTactics
       particle.followEntity unit
       @particles.push particle
       particles.push particle
-      @fxParticle.addChild particle.texture
+      @fxLayer.addChild particle.texture
     particles
 
   assetsReady: =>
@@ -190,17 +192,41 @@ class WingsOfLemuriaTactics
   testUnit: ->
     column = 0
     row = 1
+
     unit = @addUnit 'marine'
+    unit.walk 4,4
+    unit.face 'left'
+    particles = @addParticle unit, 'shield'
+    
+    unit = @addUnit 'vanguard'
+    unit.walk 4,5
+    unit.face 'left'
+    particles = @addParticle unit, 'shield'
+
+
+    unit = @addUnit 'vanguard'
+    particles = @addParticle unit, 'shield'
     tiles = [
       [1, 1]
       [2, 1]
       [3, 1]
       [4, 1]
     ]
+
+    tiles = [
+      [1,1]
+      [1,2]
+      [1,3]
+      [1,4]
+      [1,5]
+    ]
     unit.walk column, row
     @moveUnit unit, tiles
-    particles = @addParticle unit, 'shield'
-    unit.on 'walkEnd', ->
+    unit.on 'walkEnd', =>
+      after 5000, =>
+        do tiles.reverse
+        unit.walk tiles[0][0], tiles[0][1]
+        @moveUnit unit, tiles
       return
       for particle in particles
         do particle.die
@@ -227,9 +253,9 @@ class WingsOfLemuriaTactics
         @fxLayer.removeChild particle.texture
         i--
       i++
-    @fade.visible = !(@fxParticle.visible = false)
-    @fxLayer.updateCache 'source-over'
-    @fade.visible = !(@fxParticle.visible = true)
+    @fade.visible = not @fxParticle.visible = false
+    @fxLayer.updateCache 'destination-out'
+    @fade.visible = not @fxParticle.visible = true
     @fxLayer.updateCache 'lighter'
 
 

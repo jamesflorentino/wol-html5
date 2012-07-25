@@ -40,8 +40,16 @@
     };
 
     Entity.prototype.face = function(leftOrRight) {
-      this.sprite.scaleX = leftOrRight === "left" ? -1 : 1;
-      return this;
+      if (leftOrRight != null) {
+        this.sprite.scaleX = leftOrRight === "left" ? -1 : 1;
+        return this;
+      } else {
+        if (this.sprite.scaleX === -1) {
+          return "left";
+        } else {
+          return "right";
+        }
+      }
     };
 
     Entity.prototype.sheetData = function(sheetData) {
@@ -98,34 +106,48 @@
     };
 
     Entity.prototype.walkList = function(points, walkDuration) {
-      var hex, point, tween, x, y, _i, _len,
+      var i, point, tween, _fn, _i, _len,
         _this = this;
       if (walkDuration == null) {
         walkDuration = this.walkDuration;
       }
       tween = Tween.get(this.sprite);
-      if (walkDuration > 0) {
-        this.onWalk();
-      }
-      for (_i = 0, _len = points.length; _i < _len; _i++) {
-        point = points[_i];
+      _fn = function() {
+        var hex, nextPoint, x, y;
         x = point[0], y = point[1];
+        nextPoint = points[i + 1];
         hex = HexTile.position(x, y, true);
         tween = tween.to({
           x: hex.x,
           y: hex.y
         }, walkDuration);
-        tween = tween.call(function() {
+        return tween = tween.call(function() {
+          var nextHex;
           _this.tileX = x;
-          return _this.tileY = y;
+          _this.tileY = y;
+          if (nextPoint != null) {
+            nextHex = HexTile.position(nextPoint[0], nextPoint[1], true);
+            if (nextHex.x > hex.x) {
+              return _this.face('right');
+            } else {
+              return _this.face('left');
+            }
+          }
         });
+      };
+      for (i = _i = 0, _len = points.length; _i < _len; i = ++_i) {
+        point = points[i];
+        _fn();
       }
-      return tween = tween.call(function() {
+      tween = tween.call(function() {
         if (walkDuration > 0) {
           _this.onWalkEnd();
         }
         return _this.trigger('walkEnd');
       });
+      if (walkDuration > 0) {
+        return this.onWalk();
+      }
     };
 
     Entity.prototype.walkTo = function(x, y, walkDuration) {

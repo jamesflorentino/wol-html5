@@ -22,8 +22,11 @@ class Game.Entity extends EventsDispatcher
     this
 
   face: (leftOrRight) ->
-    @sprite.scaleX = if leftOrRight is "left" then -1 else 1
-    this
+    if leftOrRight?
+      @sprite.scaleX = if leftOrRight is "left" then -1 else 1
+      return this
+    else
+      if @sprite.scaleX is -1 then "left" else "right"
 
   sheetData: (sheetData) ->
     return unless sheetData?
@@ -74,17 +77,22 @@ class Game.Entity extends EventsDispatcher
   # tells the unit to move around the respective hexagon tiles
   walkList: (points, walkDuration = @walkDuration) ->
     tween = Tween.get @sprite
-    do @onWalk if walkDuration > 0
-    for point in points
-      [x, y] = point
-      hex = HexTile.position x, y, true
-      tween = tween.to {x: hex.x, y: hex.y}, walkDuration
-      tween = tween.call =>
-        @tileX = x
-        @tileY = y
+    for point, i in points
+      do =>
+        [x, y] = point
+        nextPoint = points[i + 1]
+        hex = HexTile.position x, y, true
+        tween = tween.to {x: hex.x, y: hex.y}, walkDuration
+        tween = tween.call =>
+          @tileX = x
+          @tileY = y
+          if nextPoint?
+            nextHex = HexTile.position nextPoint[0], nextPoint[1], true
+            if nextHex.x > hex.x then @face 'right' else @face 'left'
     tween = tween.call =>
       do @onWalkEnd if walkDuration > 0
       @trigger 'walkEnd'
+    do @onWalk if walkDuration > 0
 
   # @params x:int, y:int, walkDuration:int
   # Tells the unit to immediate move to the target hexagon tile
