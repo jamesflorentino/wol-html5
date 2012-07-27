@@ -109,7 +109,10 @@
       var i, result, _i;
       result = [];
       for (i = _i = 1; 1 <= index ? _i <= index : _i >= index; i = 1 <= index ? ++_i : --_i) {
-        result.push([centerX + this.deltaX(direction, isOddRow, index, i - 1), centerY + this.deltaY(direction, isOddRow, index, i - 1)]);
+        result.push({
+          x: centerX + this.deltaX(direction, isOddRow, index, i - 1),
+          y: centerY + this.deltaY(direction, isOddRow, index, i - 1)
+        });
       }
       return result;
     };

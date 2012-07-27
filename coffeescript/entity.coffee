@@ -7,6 +7,7 @@ class Game.Entity extends EventsDispatcher
     @tileY = 0
     @sprite = new Container()
     @walkDuration = 1000
+    @height = 0
     do @onSpawn
 
   send: ->
@@ -58,6 +59,7 @@ class Game.Entity extends EventsDispatcher
     @totalFrames = -> do spriteSheet.getNumFrames
 
     @spriteSheet = spriteSheet
+    @animation = animation
 
     @sprite.addChild animation
     @stop 0

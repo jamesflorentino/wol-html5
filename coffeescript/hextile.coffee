@@ -49,10 +49,9 @@ class Game.HexTile
   @delta: (centerX, centerY, direction, isOddRow, index) ->
     result = []
     for i in [1..index]
-      result.push [
-        centerX + @deltaX(direction, isOddRow, index, i - 1)
-      , centerY + @deltaY(direction, isOddRow, index, i - 1)
-      ]
+      result.push
+        x: centerX + @deltaX(direction, isOddRow, index, i - 1)
+        y: centerY + @deltaY(direction, isOddRow, index, i - 1)
     return result
 
   @adjacent: (centerX, centerY, radius = 1) ->

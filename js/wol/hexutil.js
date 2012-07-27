@@ -256,8 +256,8 @@
     return tiles;
   };
 
-  getHeuristics = function(start, destination) {
-    return Math.sqrt(Math.pow(start.x - destination.x, 2) + Math.pow(start.y - destination.y, 2));
+  getHeuristics = function(initX, initY, dstX, dstY) {
+    return Math.sqrt(Math.pow(initX - dstX, 2) + Math.pow(initY - dstY, 2));
   };
 
   getAdjacentPoints = function(origin) {
@@ -276,7 +276,7 @@
     return _results;
   };
 
-  window.HexUtil = {
+  Game.HexUtil = {
     getAdjacentHexes: getAdjacentHexes,
     getHeuristics: getHeuristics,
     getAdjacentPoints: getAdjacentPoints,

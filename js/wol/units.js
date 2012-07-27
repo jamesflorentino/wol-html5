@@ -25,6 +25,7 @@
       this.play('idleIn');
       this.reg(0, 8);
       this.walkDuration = 500;
+      this.height = 40;
       return this.spriteSheet.getAnimation('onMoveStart').next = 'onMove';
     };
 

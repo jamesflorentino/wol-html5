@@ -186,13 +186,12 @@ getSouthEast = (x, y, radius, skipIteration) ->
   tiles
 
 # calculation of the shortest distance to the target area.
-getHeuristics = (start, destination) ->
+getHeuristics = (initX, initY, dstX, dstY) ->
   # the manhattan distance
   # Math.abs(start.x - destination.x) + Math.abs(start.y - destination.y)
   # the euclidean distance
   #Math.sqrt(Math.pow(start.x - destination.x, 2)) + Math.pow(start.x - destination.y, 2)
-  Math.sqrt(Math.pow((start.x - destination.x), 2) + Math.pow((start.y - destination.y), 2))
-
+  Math.sqrt(Math.pow((initX - dstX), 2) + Math.pow((initY - dstY), 2))
 
 getAdjacentPoints = (origin) ->
   getAdjacentHexes origin.x, origin.y
@@ -201,7 +200,7 @@ getAdjacentPoints = (origin) ->
 setBounds = (points, columns, rows) ->
   point for point in points when point.x > -1 and point.y > -1 and point.x < columns and point.y < rows
 
-window.HexUtil =
+Game.HexUtil =
   getAdjacentHexes: getAdjacentHexes
   getHeuristics: getHeuristics
   getAdjacentPoints: getAdjacentPoints

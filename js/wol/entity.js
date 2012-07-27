@@ -21,6 +21,7 @@
       this.tileY = 0;
       this.sprite = new Container();
       this.walkDuration = 1000;
+      this.height = 0;
       return this.onSpawn();
     };
 
@@ -88,6 +89,7 @@
         return spriteSheet.getNumFrames();
       };
       this.spriteSheet = spriteSheet;
+      this.animation = animation;
       this.sprite.addChild(animation);
       this.stop(0);
       return this.onSheetData();

@@ -5,66 +5,25 @@
 # twitter: @jamesflorentino
 #########################################################
 
-{Scene, EventsDispatcher, Entity, Units, HexTile} = Game
-{AssetLibrary, ClassManager, SheetData} = Game
-
+{Scene, EventsDispatcher, Entity, Units, HexTile, Particles, AssetLibrary, ClassManager, SheetData}  = Game
 {Shape, Ticker, Ease, Tween, Container, SpriteSheet, SpriteSheetUtils, Bitmap} = createjs
-#========================================================
-
-# TEST PARTICLES
-class Vector
-  speed: 10
-  time: 0
-
-class Particle
-  originX: 0
-  originY: 0
-  speed: 10
-  time: 0
-  constructor: (image) ->
-    @index = null
-    @texture = new Bitmap image
-    @texture.compositeOperation = 'lighter'
-    @texture.regX = image.naturalWidth * 0.5
-    @texture.regY = image.naturalHeight * 0.5
-    @setOrigin 0, 0
-    @speed = 10 * Math.PI / 180
-    @time = new Date().getTime()  * Math.random()
-    @timeX = new Date().getTime() * Math.random()
-    @texture.scaleX = @texture.scaleY = 0.25 * Math.random()
-
-  die: ->
-    @complete = true
-
-  followEntity: (@entity) ->
-
-  setOrigin: (x, y) ->
-    @originX = x
-    @originY = y
-
-  update: ->
-    if @entity?
-      @setOrigin @entity.sprite.x, @entity.sprite.y + 40
-    @texture.x = @originX + Math.sin(@timeX) * 40
-    @texture.y = @originY + Math.cos(@time * 0.25) * 20
-    @texture.alpha = Math.abs Math.cos(@time)
-    @time += @speed
-    @timeX += @speed * 0.5
-
-  x: (x) ->
-    @texture.x = x if x?
-    @texture.x
-
-  y: (y) ->
-    @texture.y = y if y?
-    @texture.y
 
 #========================================================
-class WingsOfLemuriaTactics
+class Settings
+  constructor: ->
+    @particles = false
+    @particleEffects = false
+
+
+
+#========================================================
+class Game.WingsOfLemuriaTactics
+  settings: new Settings
+
   constructor: ->
     canvas = document.querySelector 'canvas#game'
     canvas.height = 450
-    @particles = []
+    @particles = new Particles
     @scene = new Scene canvas
     @scene.update = @update
     do @scene.pause
@@ -79,7 +38,7 @@ class WingsOfLemuriaTactics
     @fade.graphics.beginFill('rgba(0,0,0,0.1)').drawRect(0, 0, canvas.width, canvas.height)
     @fxLayer.addChild @fade, @fxParticle
     @fxLayer.cache 0, 0, canvas.width, canvas.height
-    @fxLayer.compositeOperation = 'lighter'
+    #@fxLayer.compositeOperation = 'lighter'
 
     # set coordinates
     @setTerrainPosition 5, 70
@@ -115,18 +74,6 @@ class WingsOfLemuriaTactics
     entity.sheetData sheetData
     @scene.getLayer('units').addChild entity.sprite
     entity
-
-  addParticle: (unit, name = 'shield') ->
-    particles = []
-    image = @assets.get name
-    for i in [0..10]
-      particle = new Particle image
-      particle.index = i
-      particle.followEntity unit
-      @particles.push particle
-      particles.push particle
-      @fxLayer.addChild particle.texture
-    particles
 
   assetsReady: =>
     spriteSheet = new SpriteSheet SheetData.elements(@assets.get 'elements')
@@ -176,62 +123,46 @@ class WingsOfLemuriaTactics
   showTiles: (tiles, assetName = 'hex_target') ->
     image = @assets.get assetName
     container = @scene.getLayer 'tiles'
-    hexTiles = []
-    for tile in tiles
-      [x, y] = tile
-      bitmap = new Bitmap image
-      tilePosition = HexTile.position x, y, true
-      bitmap.x = tilePosition.x
-      bitmap.y = tilePosition.y
-      bitmap.regX = HexTile.WIDTH * 0.5
-      bitmap.regY = HexTile.HEIGHT * 0.5
-      container.addChild bitmap
-      hexTiles.push bitmap
-    hexTiles
+    if tiles instanceof Array
+      hexTiles = []
+      _.each tiles, (tile) ->
+        {x, y} = tile
+        bitmap = new Bitmap image
+        tilePosition = HexTile.position x, y, true
+        bitmap.x = tilePosition.x
+        bitmap.y = tilePosition.y
+        bitmap.tileX = x
+        bitmap.tileY = y
+        bitmap.regX = HexTile.WIDTH * 0.5
+        bitmap.regY = HexTile.HEIGHT * 0.5
+        container.addChild bitmap
+        hexTiles.push bitmap
+      hexTiles
 
   testUnit: ->
-    column = 0
-    row = 1
-
+    @settings.particles = true
+    @settings.particleEffects = true
     unit = @addUnit 'marine'
-    unit.walk 4,4
-    unit.face 'left'
-    particles = @addParticle unit, 'shield'
-    
-    unit = @addUnit 'vanguard'
-    unit.walk 4,5
-    unit.face 'left'
-    particles = @addParticle unit, 'shield'
+    unit.walk 5, 0
+    data =
+      name: 'shield'
+      asset: @assets.get 'shield'
+      total: 10
+      entity: unit
+    particles = @particles.create(data.name, data.asset, data.total, data.entity)
+    _.each particles, (particle) =>
+      @fxParticle.addChild particle.bitmap
+      particle.die = (me) => @fxParticle.removeChild me.bitmap
+    return
+    #==================================================
+    tiles = HexTile.adjacent unit.tileX, unit.tileY, 2
+    hexTiles = @showTiles tiles, 'hex_select'
+    _.each hexTiles, (hexTile, i) ->
+      hexTile.onClick = ->
+        centerTile = hexTile
+        {tileX, tileY} = centerTile
+        adjacent = HexTile.adjacent tileX, tileY
 
-
-    unit = @addUnit 'vanguard'
-    particles = @addParticle unit, 'shield'
-    tiles = [
-      [1, 1]
-      [2, 1]
-      [3, 1]
-      [4, 1]
-    ]
-
-    tiles = [
-      [1,1]
-      [1,2]
-      [1,3]
-      [1,4]
-      [1,5]
-    ]
-    unit.walk column, row
-    @moveUnit unit, tiles
-    unit.on 'walkEnd', =>
-      after 5000, =>
-        do tiles.reverse
-        unit.walk tiles[0][0], tiles[0][1]
-        @moveUnit unit, tiles
-      return
-      for particle in particles
-        do particle.die
-
-  # generate a bunch of units for benchmarking
   testUnits: ->
     rows = 7
     columns = 8
@@ -244,21 +175,14 @@ class WingsOfLemuriaTactics
         unit.face 'left' if Math.random() > 0.5
 
   update: =>
-    i = 0
-    while i < @particles.length
-      particle = @particles[i]
-      do particle.update
-      if particle.complete
-        @particles.splice @particles.indexOf(particle), 1
-        @fxLayer.removeChild particle.texture
-        i--
-      i++
+    return
+    if @settings.particles
+      do @particles.update
+      if @settings.particleEffects
+        do @updateParticleFx
+
+  updateParticleFx: ->
     @fade.visible = not @fxParticle.visible = false
     @fxLayer.updateCache 'destination-out'
     @fade.visible = not @fxParticle.visible = true
     @fxLayer.updateCache 'lighter'
-
-
-#========================================================
-window.onload = ->
-  game = new WingsOfLemuriaTactics

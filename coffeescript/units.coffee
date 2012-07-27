@@ -9,6 +9,7 @@ class Units.Marine extends Entity
     @play 'idleIn'
     @reg 0, 8
     @walkDuration = 500
+    @height = 40
     @spriteSheet.getAnimation('onMoveStart').next = 'onMove'
 
   onAnimationEnd: (label, animation) ->

@@ -98,14 +98,15 @@
     SheetData.elements = function(image) {
       return {
         "images": [image],
-        "frames": [[2, 118, 84, 56], [2, 60, 84, 56], [2, 2, 84, 56], [88, 2, 26, 28]],
+        "frames": [[2, 118, 84, 56], [2, 60, 84, 56], [2, 2, 84, 56], [88, 2, 26, 28], [88, 32, 18, 18]],
         "animations": {
           "hex_bg": [0],
           "hex_select": [1],
           "hex_target": [2],
-          "shield": [3]
+          "shield": [3],
+          "aura": [4]
         },
-        "texturepacker": ["SmartUpdateHash:$TexturePacker:SmartUpdate:fbf656b1d7e34f09a68fab42734d22db$", "CreatedwithTexturePacker(http://www.texturepacker.com)forEasyJS"]
+        "texturepacker": ["SmartUpdateHash:$TexturePacker:SmartUpdate:deca3bf69e8395b86184512dee987e34$", "CreatedwithTexturePacker(http://www.texturepacker.com)forEasyJS"]
       };
     };
 

@@ -14,9 +14,10 @@
 <script src='js/libs/preloadjs.js'></script>
 <script src='js/libs/soundjs.js'></script>
 <script src='js/libs/tweenjs.js'></script>
-<script src='js/wol/hexutil.js'></script>
+
 <script src='js/wol/utils.js'></script>
 <script src='js/wol/initialize.js'></script>
+<script src='js/wol/hexutil.js'></script>
 <script src='js/wol/eventsdispatcher.js'></script>
 <script src='js/wol/classmanager.js'></script>
 <script src='js/wol/assetlibrary.js'></script>
@@ -25,6 +26,13 @@
 <script src='js/wol/renderer.js'></script>
 <script src='js/wol/sheetdata.js'></script>
 <script src='js/wol/units.js'></script>
+<script src='js/wol/particles.js'></script>
 <script src='js/wol/main.js'></script>
+
+<script>
+  window.onload = function () {
+    new Game.WingsOfLemuriaTactics
+  }
+</script>
 
 <canvas id="game" width="800" height="400"></canvas>
